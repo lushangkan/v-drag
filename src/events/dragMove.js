@@ -4,6 +4,11 @@ import returnPositionString from '../utils/returnPositionString';
 import vueDragEvent from '../utils/vueDragEvent';
 
 export function updatePosition(x, y) {
+
+  if (window.data.move.className.indexOf(window.data.animationCSS) == -1 && window.data.animationCSS !== '') {
+    window.data.move.className += ` ${window.data.animationCSS}`;
+  }
+
   // Store relative coordinates
   window.data.relativeX = window.data.mouseX * x;
   window.data.relativeY = window.data.mouseY * y;

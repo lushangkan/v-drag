@@ -11,11 +11,7 @@ const bannerText = `/*!
 const pluginsList = [
   nodeResolve(),
   commonjs(),
-  terser({
-    output: {
-      comments: /^!/,
-    },
-  }),
+  
 ];
 
 export default [
@@ -46,7 +42,7 @@ export default [
     output: {
       file: info.unpkg,
       name: 'vdrag',
-      format: 'iife',
+      format: 'cjs',
       exports: 'default',
       banner: bannerText,
     },

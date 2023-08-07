@@ -7,7 +7,7 @@ import eventListener from '../utils/eventListener';
 import updateMousePosition from '../utils/updateMousePosition';
 import vueDragEvent from '../utils/vueDragEvent';
 
-export default function (grabElement, moveElement, axis, snap, e) {
+export default function (grabElement, moveElement, axis, snap, animationCSS, e) {
   e.preventDefault();
 
   // Store elements
@@ -28,6 +28,12 @@ export default function (grabElement, moveElement, axis, snap, e) {
   // Store snapping values
   window.data.snapX = snap.x;
   window.data.snapY = snap.y;
+
+  window.data.animationCSS = animationCSS;
+
+  if (window.data.animationCSS !== '') {
+    window.data.move.className += ` ${window.data.animationCSS}`;
+  }
 
   // Get transform string of the move element
   const matrix = window.getComputedStyle(window.data.move).transform;

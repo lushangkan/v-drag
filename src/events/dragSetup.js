@@ -11,6 +11,7 @@ export default function (el, binding) {
   const handleSelector = value instanceof Object ? value.handle : value;
   const snap = getSnappingValues(value.snap);
   const canDrag = typeof value.canDrag === 'boolean' ? value.canDrag : true;
+  const animationCSS = typeof value.animationCSS === 'string' ? value.animationCSS : '';
 
   if (!canDrag) {
     el.classList.add(window.data.class.initial, window.data.class.dragHandleDisable);
@@ -54,13 +55,13 @@ export default function (el, binding) {
       grabElement.classList.add(window.data.class.handle);
 
       // Add events to start drag with handle
-      grabElement.onmousedown = (e) => dragStart(grabElement, el, axis, snap, e);
-      grabElement.ontouchstart = (e) => dragStart(grabElement, el, axis, snap, e);
+      grabElement.onmousedown = (e) => dragStart(grabElement, el, axis, snap, animationCSS, e);
+      grabElement.ontouchstart = (e) => dragStart(grabElement, el, axis, snap, animationCSS, e);
     });
   } else {
     // Add events to start drag without handle
-    el.onmousedown = (e) => dragStart(el, el, axis, snap, e);
-    el.ontouchstart = (e) => dragStart(el, el, axis, snap, e);
+    el.onmousedown = (e) => dragStart(el, el, axis, snap, animationCSS, e);
+    el.ontouchstart = (e) => dragStart(el, el, axis, snap, animationCSS, e);
   }
 
   // Apply CSS classes to the element

@@ -17,6 +17,8 @@ export default function () {
   // Remove setUpMovement() if mouse/touch hasn't moved
   eventListener(['mousemove', 'touchmove'], dragMove, 'remove');
 
+  window.data.move.className = window.data.move.className.replace(window.data.animationCSS, '').trim();
+
   // Replace transform properties with left and top
   moveElementTransform(
     window.data.matrix ? returnPositionString(window.data.matrix, 0, 0) : 'none',
@@ -37,24 +39,23 @@ export default function () {
     const elWidth = parseFloat(window.data.move.offsetWidth);
     const elHeight = parseFloat(window.data.move.offsetHeight);
 
-    const posX = +window.data.move.style.left.replace('px', '');
-    const posY = +window.data.move.style.top.replace('px', '');
+    const posX = +window.data.move.offsetLeft;
+    const posY = +window.data.move.offsetTop;
 
-    if (posX < 0) {
+    if (posX < 0 || posX > document.body.clientWidth) {
       window.data.move.style.left = '0px';
-    }
-
-    if (posY < 0) {
+    } else if (posY < 0 || posY > document.body.clientHeight) {
       window.data.move.style.top = '0px';
+    } else {
+      if (posY > (height - elHeight) && (height - elHeight) + posY < document.body.clientHeight) {
+        window.data.move.style.top = `${(height - elHeight)}px`;
+      }
+
+      if (posX > (width - elWidth) && (width - elWidth) + posX < document.body.clientWidth) {
+        window.data.move.style.left = `${width - elWidth}px`;
+      }
     }
 
-    if (posY > (height - elHeight)) {
-      window.data.move.style.top = `${(height - elHeight)}px`;
-    }
-
-    if (posX > (width - elWidth)) {
-      window.data.move.style.left = `${width - elWidth}px`;
-    }
   }
 
   // Remove CSS classes
