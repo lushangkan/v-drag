@@ -17,6 +17,7 @@ export default function () {
   // Remove setUpMovement() if mouse/touch hasn't moved
   eventListener(['mousemove', 'touchmove'], dragMove, 'remove');
 
+  // Remove animation class from move element
   window.data.move.className = window.data.move.className.replace(window.data.animationCSS, '').trim();
 
   // Replace transform properties with left and top
@@ -36,26 +37,30 @@ export default function () {
       parseFloat(window.getComputedStyle(firstEl, null).getPropertyValue("padding-top")) -
       parseFloat(window.getComputedStyle(firstEl, null).getPropertyValue("padding-bottom"));
 
-    const elWidth = parseFloat(window.data.move.offsetWidth);
-    const elHeight = parseFloat(window.data.move.offsetHeight);
+    const limitEleBottom = firstEl.getBoundingClientRect().bottom;
+    const limitEleRight = firstEl.getBoundingClientRect().right;
+    const limitEleTop = firstEl.getBoundingClientRect().top;
+    const limitEleLeft = firstEl.getBoundingClientRect().left;
 
-    const posX = +window.data.move.offsetLeft;
-    const posY = +window.data.move.offsetTop;
+    const moveEleBottom = +window.data.move.getBoundingClientRect().bottom;
+    const moveEleRight = +window.data.move.getBoundingClientRect().right;
+    const moveEleTop = +window.data.move.getBoundingClientRect().top;
+    const moveEleLeft = +window.data.move.getBoundingClientRect().left;
 
-    if (posX < 0 || posX > document.body.clientWidth) {
-      window.data.move.style.left = '0px';
-    } else if (posY < 0 || posY > document.body.clientHeight) {
-      window.data.move.style.top = '0px';
+    if (moveEleRight > limitEleRight) {
+      let left = width - window.data.move.clientWidth;
+      window.data.move.style.left = `${left}px`;
+    } else if (moveEleBottom > limitEleBottom) {
+      let top = height - window.data.move.clientHeight;
+      window.data.move.style.top = `${top}px`;
     } else {
-      if (posY > (height - elHeight) && (height - elHeight) + posY < document.body.clientHeight) {
-        window.data.move.style.top = `${(height - elHeight)}px`;
+      if (limitEleTop > moveEleTop) {
+        window.data.move.style.top = '0';
       }
-
-      if (posX > (width - elWidth) && (width - elWidth) + posX < document.body.clientWidth) {
-        window.data.move.style.left = `${width - elWidth}px`;
+      if (limitEleLeft > moveEleLeft) {
+        window.data.move.style.left = '0';
       }
     }
-
   }
 
   // Remove CSS classes
@@ -67,4 +72,5 @@ export default function () {
 
   // Stop updating mouse position
   eventListener(['mousemove', 'touchmove'], updateMousePosition, 'remove');
+
 }

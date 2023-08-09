@@ -5,6 +5,7 @@
 // Get the closest value posible when snaping on a grid
 function closestValueToSnap (value, axis) {
   const snapValue = axis === 'x' ? window.data.snapX : window.data.snapY;
+
   return Math.round(value / snapValue) * snapValue;
 }
 
@@ -35,11 +36,30 @@ function updatePosition(x, y) {
   window.data.relativeX = window.data.mouseX * x;
   window.data.relativeY = window.data.mouseY * y;
 
+  const computedStyle = window.getComputedStyle(window.data.move, null);
+
+  // Get matrix values
+  const transform = computedStyle.getPropertyValue('transform');
+
+  const newX = window.data.matrixX + closestValueToSnap(window.data.relativeX, 'x');
+  const newY = window.data.matrixY + closestValueToSnap(window.data.relativeY, 'y');
+  
+  // Get matrix values
+  const oldX = transform.match(/matrix\((-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?)\)/)?.[5];
+  const oldY = transform.match(/matrix\((-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?)\)/)?.[6];
+  
+  if (oldX !== undefined && oldY !== undefined) {
+    if (newX !== oldX || newY !== oldY) {
+      // Vue event on drag snapping
+      vueDragEvent(window.data.move, 'snapping');
+    }
+  }
+
   // Apply transformation to move element
   window.data.move.style.transform = returnPositionString(
     window.data.matrix,
-    window.data.matrixX + closestValueToSnap(window.data.relativeX, 'x'),
-    window.data.matrixY + closestValueToSnap(window.data.relativeY, 'y'),
+    newX,
+    newY,
   );
 
   // Vue event on drag moving
@@ -144,8 +164,10 @@ function dragStart (grabElement, moveElement, axis, snap, animationCSS, e) {
   window.data.snapX = snap.x;
   window.data.snapY = snap.y;
 
+  // Store animationCSS value
   window.data.animationCSS = animationCSS;
 
+  // Add animation class to move element
   if (window.data.animationCSS !== '') {
     window.data.move.className += ` ${window.data.animationCSS}`;
   }
@@ -196,6 +218,7 @@ function dragEnd () {
   // Remove setUpMovement() if mouse/touch hasn't moved
   eventListener(['mousemove', 'touchmove'], setUpMovement, 'remove');
 
+  // Remove animation class from move element
   window.data.move.className = window.data.move.className.replace(window.data.animationCSS, '').trim();
 
   // Replace transform properties with left and top
@@ -215,26 +238,30 @@ function dragEnd () {
       parseFloat(window.getComputedStyle(firstEl, null).getPropertyValue("padding-top")) -
       parseFloat(window.getComputedStyle(firstEl, null).getPropertyValue("padding-bottom"));
 
-    const elWidth = parseFloat(window.data.move.offsetWidth);
-    const elHeight = parseFloat(window.data.move.offsetHeight);
+    const limitEleBottom = firstEl.getBoundingClientRect().bottom;
+    const limitEleRight = firstEl.getBoundingClientRect().right;
+    const limitEleTop = firstEl.getBoundingClientRect().top;
+    const limitEleLeft = firstEl.getBoundingClientRect().left;
 
-    const posX = +window.data.move.offsetLeft;
-    const posY = +window.data.move.offsetTop;
+    const moveEleBottom = +window.data.move.getBoundingClientRect().bottom;
+    const moveEleRight = +window.data.move.getBoundingClientRect().right;
+    const moveEleTop = +window.data.move.getBoundingClientRect().top;
+    const moveEleLeft = +window.data.move.getBoundingClientRect().left;
 
-    if (posX < 0 || posX > document.body.clientWidth) {
-      window.data.move.style.left = '0px';
-    } else if (posY < 0 || posY > document.body.clientHeight) {
-      window.data.move.style.top = '0px';
+    if (moveEleRight > limitEleRight) {
+      let left = width - window.data.move.clientWidth;
+      window.data.move.style.left = `${left}px`;
+    } else if (moveEleBottom > limitEleBottom) {
+      let top = height - window.data.move.clientHeight;
+      window.data.move.style.top = `${top}px`;
     } else {
-      if (posY > (height - elHeight) && (height - elHeight) + posY < document.body.clientHeight) {
-        window.data.move.style.top = `${(height - elHeight)}px`;
+      if (limitEleTop > moveEleTop) {
+        window.data.move.style.top = '0';
       }
-
-      if (posX > (width - elWidth) && (width - elWidth) + posX < document.body.clientWidth) {
-        window.data.move.style.left = `${width - elWidth}px`;
+      if (limitEleLeft > moveEleLeft) {
+        window.data.move.style.left = '0';
       }
     }
-
   }
 
   // Remove CSS classes
@@ -246,6 +273,7 @@ function dragEnd () {
 
   // Stop updating mouse position
   eventListener(['mousemove', 'touchmove'], updateMousePosition, 'remove');
+
 }
 
 // Return object even if it's a string (with or without units),

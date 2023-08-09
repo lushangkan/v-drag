@@ -13,11 +13,30 @@ export function updatePosition(x, y) {
   window.data.relativeX = window.data.mouseX * x;
   window.data.relativeY = window.data.mouseY * y;
 
+  const computedStyle = window.getComputedStyle(window.data.move, null);
+
+  // Get matrix values
+  const transform = computedStyle.getPropertyValue('transform');
+
+  const newX = window.data.matrixX + closestValueToSnap(window.data.relativeX, 'x');
+  const newY = window.data.matrixY + closestValueToSnap(window.data.relativeY, 'y');
+  
+  // Get matrix values
+  const oldX = transform.match(/matrix\((-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?)\)/)?.[5];
+  const oldY = transform.match(/matrix\((-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?), (-?\d+(?:\.\d+)?)\)/)?.[6];
+  
+  if (oldX !== undefined && oldY !== undefined) {
+    if (newX !== oldX || newY !== oldY) {
+      // Vue event on drag snapping
+      vueDragEvent(window.data.move, 'snapping');
+    }
+  }
+
   // Apply transformation to move element
   window.data.move.style.transform = returnPositionString(
     window.data.matrix,
-    window.data.matrixX + closestValueToSnap(window.data.relativeX, 'x'),
-    window.data.matrixY + closestValueToSnap(window.data.relativeY, 'y'),
+    newX,
+    newY,
   );
 
   // Vue event on drag moving

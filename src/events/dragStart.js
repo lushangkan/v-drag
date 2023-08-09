@@ -29,8 +29,10 @@ export default function (grabElement, moveElement, axis, snap, animationCSS, e) 
   window.data.snapX = snap.x;
   window.data.snapY = snap.y;
 
+  // Store animationCSS value
   window.data.animationCSS = animationCSS;
 
+  // Add animation class to move element
   if (window.data.animationCSS !== '') {
     window.data.move.className += ` ${window.data.animationCSS}`;
   }
